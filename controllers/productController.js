@@ -47,8 +47,43 @@ const searchProducts = async (req, res) => {
   }
 };
 
+const getProductsByCategoryId = async (req, res) => {
+    try {
+        const { categoryId } = req.params;
+
+        const products = await Product.find({ 
+            category_id: categoryId,
+            status: 'active' 
+        }).sort({ created_at: -1 }); // Sắp xếp sản phẩm mới lên đầu
+
+        // Nếu không có sản phẩm nào thuộc danh mục này
+        if (!products || products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Không tìm thấy sản phẩm nào thuộc danh mục mang mã: ${categoryId}`
+            });
+        }
+
+        // Trả về dữ liệu thành công cho Client
+        return res.status(200).json({
+            success: true,
+            count: products.length,
+            data: products
+        });
+
+    } catch (error) {
+        // Xử lý lỗi hệ thống nếu có
+        return res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi hệ thống khi lấy danh sách sản phẩm.',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
   getAllProducts,
-  searchProducts
+  searchProducts,
+  getProductsByCategoryId
 };
 
